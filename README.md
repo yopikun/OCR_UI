@@ -1,36 +1,122 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Propack OCR
 
-## Getting Started
+受注書の OCR 結果を確認し、EDI 出力につなげるための業務 UI モックです。  
+Next.js で構築しており、受注一覧、結果編集、EDI 出力、履歴、マスタ管理までを一通り画面として確認できます。
 
-First, run the development server:
+このリポジトリは、v0 で作成した UI をベースに、ローカルで動作するアプリとして整理したものです。  
+現在は主にフロントエンド中心の実装で、データはモックデータと `localStorage` を使って動作します。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## できること
+
+- ダッシュボードで処理状況を確認
+- 受注一覧で受注書を確認し、一括処理を実行
+- 一括処理後の受注を結果編集画面に反映
+- シート受注 / ケース受注を切り替えて表示
+- 会社フィルタで対象会社だけを表示
+- 結果編集画面で原本の回転と抽出結果テーブルの確認
+- EDI 出力画面で出力対象の確認
+- 履歴管理画面とマスタ管理画面の UI 確認
+
+## 画面構成
+
+- `/`
+  ダッシュボード
+- `/orders`
+  受注一覧と一括処理
+- `/compare`
+  OCR 結果の確認、原本表示、結果編集
+- `/export`
+  EDI 出力確認
+- `/history`
+  出力履歴、変更履歴の確認
+- `/master`
+  共通管理、会社別管理、履歴・版管理、ユーザ管理
+
+## 主な仕様
+
+- 受注は一括処理時に `sheet` / `case` へ自動分類されます
+- 現在登録されている受注書はすべてシート受注として扱う想定です
+- そのため、`ケース受注` を選ぶと対象受注が 0 件で表示される状態が正しい挙動です
+- 会社フィルタはダッシュボード、受注一覧、結果編集に反映されます
+- 一括処理で確定した受注は結果編集画面の対象受注に追加されます
+
+## 技術スタック
+
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS
+- Radix UI
+- Lucide Icons
+
+## ローカル起動手順
+
+### 前提
+
+- Node.js 18 以上を推奨
+- Windows PowerShell を使用する場合は `npm` ではなく `npm.cmd` を使ってください
+
+### 1. 依存関係をインストール
+
+```powershell
+cd c:\Users\yoshi\Desktop\propack_ocr
+npm.cmd install --legacy-peer-deps
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. 開発サーバーを起動
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```powershell
+npm.cmd run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. ブラウザで開く
 
-## Learn More
+```text
+http://localhost:3000
+```
 
-To learn more about Next.js, take a look at the following resources:
+## 本番ビルド確認
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```powershell
+npm.cmd run build
+npm.cmd run start
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## チェックコマンド
 
-## Deploy on Vercel
+```powershell
+npm.cmd run lint
+.\node_modules\.bin\tsc.cmd --noEmit
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## データの扱い
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- このアプリは現時点ではバックエンド未接続です
+- 画面の状態の一部は `localStorage` に保存されます
+- 受注一覧での一括処理結果は、結果編集画面へローカル保存経由で反映されます
+
+## ディレクトリ概要
+
+- `app/`
+  App Router のページ定義
+- `components/`
+  各画面コンポーネントと共通 UI
+- `lib/`
+  モックデータ、保存処理、分類ロジック
+- `public/`
+  静的アセット
+
+## 注意点
+
+- このリポジトリは業務画面の試作・確認用途を主目的としています
+- 実運用向けの OCR、EDI 変換、認証、DB 保存、権限制御は未接続です
+- 一部文言やモックデータは開発用の仮内容です
+- lint は通りますが、既存コンポーネント由来の warning が一部残っています
+
+## 今後の拡張候補
+
+- OCR API / バックエンド接続
+- 実データ保存用 DB 連携
+- 認証、ユーザ権限、承認フローの実装
+- EDI 出力の実ファイル生成
+- 会社別設定とマスタ管理の永続化
