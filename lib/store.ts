@@ -67,7 +67,7 @@ export const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string; 
   exported: { label: "出力済み", color: "text-primary-foreground", bgColor: "bg-primary" },
 }
 
-export const MOCK_COMPANIES: Company[] = [
+const BASE_COMPANIES: Company[] = [
   { id: "c1", name: "株式会社共立紙器製作所", domain: "kyoritsu-shiki.co.jp", rules: ["帳票タイプA", "FAXヘッダー"] },
   { id: "c2", name: "有限会社エス・エス", domain: "ss-corp.co.jp", rules: ["FAXヘッダー", "帳票タイプB"] },
   { id: "c3", name: "株式会社ワイエム紙販", domain: "ym-shihan.co.jp", rules: ["FAX番号", "帳票タイプC"] },
@@ -75,6 +75,19 @@ export const MOCK_COMPANIES: Company[] = [
   { id: "c5", name: "コンポー株式会社", domain: "compo.co.jp", rules: ["FAX番号", "帳票タイプD"] },
   { id: "c6", name: "五十嵐製箱株式会社", domain: "igarashi-seihako.co.jp", rules: ["FAXヘッダー", "帳票タイプE"] },
 ]
+
+const DUMMY_COMPANIES: Company[] = Array.from({ length: 100 }, (_, index) => {
+  const companyNo = String(index + 1).padStart(3, "0")
+
+  return {
+    id: `dummy-${companyNo}`,
+    name: `ダミー会社 ${companyNo}`,
+    domain: `dummy-${companyNo}.example.com`,
+    rules: index % 2 === 0 ? ["メール取込", "CSV変換"] : ["FAX取込", "OCR補正"],
+  }
+})
+
+export const MOCK_COMPANIES: Company[] = [...BASE_COMPANIES, ...DUMMY_COMPANIES]
 
 export const MOCK_ORDERS: OrderDocument[] = [
   // --- 共立紙器製作所 ---

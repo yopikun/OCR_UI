@@ -1,10 +1,5 @@
-import { AppShell } from "@/components/app-shell"
-import { HistoryContent } from "@/components/history-content"
+import { redirect } from "next/navigation"
 
 export default function HistoryPage() {
-  return (
-    <AppShell>
-      <HistoryContent />
-    </AppShell>
-  )
+  redirect("/export")
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import {
   BookOpen,
   Building2,
@@ -15,6 +15,7 @@ import {
   Shield,
   TestTube2,
   Users,
+  X,
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -131,6 +132,65 @@ function SectionHeader({
 
 export function MasterContent() {
   const [activeTab, setActiveTab] = useState("common")
+  const [companySearchQuery, setCompanySearchQuery] = useState("")
+  const [showCompanySearchOptions, setShowCompanySearchOptions] = useState(false)
+  const [companyNameFilter, setCompanyNameFilter] = useState("")
+  const [formTypeFilter, setFormTypeFilter] = useState("")
+  const [productFilter, setProductFilter] = useState("")
+  const [ediFormatFilter, setEdiFormatFilter] = useState("")
+
+  const companyNameOptions = useMemo(() => companyMasters.map((company) => company.name), [])
+  const formTypeOptions = useMemo(
+    () => Array.from(new Set(companyMasters.flatMap((company) => company.forms))).sort(),
+    [],
+  )
+  const productOptions = useMemo(
+    () => Array.from(new Set(companyMasters.flatMap((company) => company.products))).sort(),
+    [],
+  )
+  const ediFormatOptions = useMemo(() => Array.from(new Set(companyMasters.map((company) => company.format))).sort(), [])
+
+  const filteredCompanyMasters = useMemo(() => {
+    const normalizedSearch = companySearchQuery.toLowerCase()
+    const normalizedName = companyNameFilter.toLowerCase()
+    const normalizedForm = formTypeFilter.toLowerCase()
+    const normalizedProduct = productFilter.toLowerCase()
+    const normalizedFormat = ediFormatFilter.toLowerCase()
+
+    return companyMasters.filter((company) => {
+      if (
+        normalizedSearch &&
+        ![company.name, company.code, company.format, ...company.forms, ...company.products].some((value) =>
+          value.toLowerCase().includes(normalizedSearch),
+        )
+      ) {
+        return false
+      }
+
+      if (normalizedName && !company.name.toLowerCase().includes(normalizedName)) return false
+      if (normalizedForm && !company.forms.some((form) => form.toLowerCase().includes(normalizedForm))) return false
+      if (normalizedProduct && !company.products.some((product) => product.toLowerCase().includes(normalizedProduct))) {
+        return false
+      }
+      if (normalizedFormat && !company.format.toLowerCase().includes(normalizedFormat)) return false
+
+      return true
+    })
+  }, [companyNameFilter, companySearchQuery, ediFormatFilter, formTypeFilter, productFilter])
+
+  const activeCompanyOptionCount = [
+    companyNameFilter.length > 0,
+    formTypeFilter.length > 0,
+    productFilter.length > 0,
+    ediFormatFilter.length > 0,
+  ].filter(Boolean).length
+
+  const clearCompanyFilters = () => {
+    setCompanyNameFilter("")
+    setFormTypeFilter("")
+    setProductFilter("")
+    setEdiFormatFilter("")
+  }
 
   return (
     <div className="flex flex-col gap-6 overflow-auto p-6">
@@ -316,7 +376,118 @@ export function MasterContent() {
               }
             />
             <CardContent className="grid gap-4 p-6">
-              {companyMasters.map((company) => (
+              <div className="rounded-2xl border border-border bg-muted/10 p-4">
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="relative min-w-[260px] flex-1">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      value={companySearchQuery}
+                      onChange={(e) => setCompanySearchQuery(e.target.value)}
+                      placeholder="会社名、コード、帳票タイプ、品名、EDI形式で検索"
+                      className="pl-9"
+                    />
+                  </div>
+
+                  <Button
+                    variant={showCompanySearchOptions ? "secondary" : "outline"}
+                    className="bg-transparent text-foreground"
+                    onClick={() => setShowCompanySearchOptions((current) => !current)}
+                  >
+                    <Search className="mr-2 h-4 w-4" />
+                    検索オプション
+                    {activeCompanyOptionCount > 0 && (
+                      <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
+                        {activeCompanyOptionCount}
+                      </span>
+                    )}
+                  </Button>
+                </div>
+
+                {showCompanySearchOptions && (
+                  <div className="mt-4 rounded-2xl border border-border bg-background/80 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-sm font-semibold text-foreground">検索オプション</h2>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          会社別管理の一覧を会社名、帳票タイプ、品名、EDI形式で詳細に絞り込みます。
+                        </p>
+                      </div>
+                      <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={clearCompanyFilters}>
+                        <X className="mr-2 h-4 w-4" />
+                        条件をクリア
+                      </Button>
+                    </div>
+
+                    <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                      <label className="grid gap-2 text-sm">
+                        <span className="font-medium text-foreground">会社フィルター</span>
+                        <Input
+                          list="master-company-name-options"
+                          value={companyNameFilter}
+                          onChange={(e) => setCompanyNameFilter(e.target.value)}
+                          placeholder="会社名を入力して絞り込み"
+                          className="h-10 rounded-xl"
+                        />
+                        <datalist id="master-company-name-options">
+                          {companyNameOptions.map((companyName) => (
+                            <option key={companyName} value={companyName} />
+                          ))}
+                        </datalist>
+                      </label>
+
+                      <label className="grid gap-2 text-sm">
+                        <span className="font-medium text-foreground">帳票タイプ</span>
+                        <Input
+                          list="master-form-type-options"
+                          value={formTypeFilter}
+                          onChange={(e) => setFormTypeFilter(e.target.value)}
+                          placeholder={formTypeOptions[0] || "帳票タイプで絞り込み"}
+                          className="h-10 rounded-xl"
+                        />
+                        <datalist id="master-form-type-options">
+                          {formTypeOptions.map((formType) => (
+                            <option key={formType} value={formType} />
+                          ))}
+                        </datalist>
+                      </label>
+
+                      <label className="grid gap-2 text-sm">
+                        <span className="font-medium text-foreground">品名</span>
+                        <Input
+                          list="master-product-options"
+                          value={productFilter}
+                          onChange={(e) => setProductFilter(e.target.value)}
+                          placeholder={productOptions[0] || "品名で絞り込み"}
+                          className="h-10 rounded-xl"
+                        />
+                        <datalist id="master-product-options">
+                          {productOptions.map((product) => (
+                            <option key={product} value={product} />
+                          ))}
+                        </datalist>
+                      </label>
+
+                      <label className="grid gap-2 text-sm">
+                        <span className="font-medium text-foreground">EDI形式</span>
+                        <Input
+                          list="master-edi-format-options"
+                          value={ediFormatFilter}
+                          onChange={(e) => setEdiFormatFilter(e.target.value)}
+                          placeholder={ediFormatOptions[0] || "EDI形式で絞り込み"}
+                          className="h-10 rounded-xl"
+                        />
+                        <datalist id="master-edi-format-options">
+                          {ediFormatOptions.map((ediFormat) => (
+                            <option key={ediFormat} value={ediFormat} />
+                          ))}
+                        </datalist>
+                      </label>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {filteredCompanyMasters.map((company) => (
                 <div key={company.id} className="rounded-xl border border-border bg-muted/20 p-5">
                   <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div>

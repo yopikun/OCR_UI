@@ -1,6 +1,7 @@
 "use client"
 
-import { createContext, useContext, useState, type ReactNode } from "react"
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import { usePathname } from "next/navigation"
 import { AppSidebar } from "@/components/app-sidebar"
 
 const CompanyFilterContext = createContext<{
@@ -16,9 +17,13 @@ interface AppShellProps {
 }
 
 export function AppShell({ children }: AppShellProps) {
+  const pathname = usePathname()
   const [category, setCategory] = useState<"sheet" | "case">("sheet")
   const [collapsed, setCollapsed] = useState(false)
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null)
+
+  useEffect(() => {
+    setCollapsed(pathname === "/compare")
+  }, [pathname])
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -27,11 +32,9 @@ export function AppShell({ children }: AppShellProps) {
         onCategoryChange={setCategory}
         collapsed={collapsed}
         onCollapsedChange={setCollapsed}
-        selectedCompanyId={selectedCompanyId}
-        onCompanySelect={setSelectedCompanyId}
       />
       <main className="flex flex-1 flex-col overflow-hidden">
-        <CompanyFilterContext.Provider value={{ selectedCompanyId, category }}>
+        <CompanyFilterContext.Provider value={{ selectedCompanyId: null, category }}>
           {children}
         </CompanyFilterContext.Provider>
       </main>

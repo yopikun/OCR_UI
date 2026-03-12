@@ -1,44 +1,31 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
-  Home,
-  FileText,
-  GitCompareArrows,
-  Download,
-  History,
-  Settings,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Building2,
-  Filter,
+  Download,
+  FileText,
+  GitCompareArrows,
+  Settings,
 } from "lucide-react"
-import { cn } from "@/lib/utils"
+
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import { MOCK_COMPANIES } from "@/lib/store"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { cn } from "@/lib/utils"
 
 const NAV_ITEMS = [
-  { href: "/", label: "ダッシュボード", icon: Home },
-  { href: "/orders", label: "受注一覧", icon: FileText },
+  { href: "/orders", label: "受注処理", icon: FileText },
   { href: "/compare", label: "結果編集", icon: GitCompareArrows },
-  { href: "/export", label: "EDI出力", icon: Download },
-  { href: "/history", label: "出力履歴", icon: History },
+  { href: "/export", label: "出力履歴", icon: Download },
   { href: "/master", label: "マスタ管理", icon: Settings },
 ]
 
@@ -47,8 +34,6 @@ interface AppSidebarProps {
   onCategoryChange: (c: "sheet" | "case") => void
   collapsed: boolean
   onCollapsedChange: (collapsed: boolean) => void
-  selectedCompanyId: string | null
-  onCompanySelect: (companyId: string | null) => void
 }
 
 export function AppSidebar({
@@ -56,11 +41,8 @@ export function AppSidebar({
   onCategoryChange,
   collapsed,
   onCollapsedChange,
-  selectedCompanyId,
-  onCompanySelect,
 }: AppSidebarProps) {
   const pathname = usePathname()
-  const [companyOpen, setCompanyOpen] = useState(true)
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -174,57 +156,6 @@ export function AppSidebar({
               )
             })}
           </nav>
-
-          {!collapsed && (
-            <>
-              <Separator className="mx-3" />
-              <div className="p-3">
-                <Collapsible open={companyOpen} onOpenChange={setCompanyOpen}>
-                  <CollapsibleTrigger asChild>
-                    <button
-                      type="button"
-                      className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground"
-                    >
-                      <Building2 className="h-3.5 w-3.5" />
-                      <span>会社フィルタ</span>
-                      <ChevronDown className={cn("ml-auto h-3.5 w-3.5 transition-transform", companyOpen && "rotate-180")} />
-                    </button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="flex flex-col gap-0.5">
-                    <button
-                      type="button"
-                      onClick={() => onCompanySelect(null)}
-                      className={cn(
-                        "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
-                        selectedCompanyId === null
-                          ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent/50",
-                      )}
-                    >
-                      <Filter className="h-3.5 w-3.5" />
-                      すべての会社
-                    </button>
-                    {MOCK_COMPANIES.map((company) => (
-                      <button
-                        type="button"
-                        key={company.id}
-                        onClick={() => onCompanySelect(company.id)}
-                        className={cn(
-                          "flex items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors",
-                          selectedCompanyId === company.id
-                            ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
-                            : "text-sidebar-foreground hover:bg-sidebar-accent/50",
-                        )}
-                      >
-                        <div className="h-2 w-2 shrink-0 rounded-full bg-primary" />
-                        <span className="truncate">{company.name}</span>
-                      </button>
-                    ))}
-                  </CollapsibleContent>
-                </Collapsible>
-              </div>
-            </>
-          )}
         </ScrollArea>
 
         <div className={cn("flex items-center border-t border-border", collapsed ? "justify-center p-3" : "gap-3 p-4")}>
